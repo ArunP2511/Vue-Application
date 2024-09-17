@@ -22,27 +22,26 @@ neo4j (or any other database) for data storage(in this project, the graph data i
 
 ### Clone the repository
 
-shell
-
-# Clone the repository
-
+```shell
+Clone the repository
 $ git clone https://github.com/your-username/your-repo-name.git
 $ cd your-repo-name
-
+```
 ### Install dependencies
 
-### For the frontend (Vue.js):
+###  For the frontend (Vue.js):
 
-shell
+```shell
 
 $ cd vue-frontend
 $ npm install
+```
 
-### For the backend (node.js):
-
-shell
+###  For the backend (node.js):
+```shell
 $ cd vue-backend
 $ npm install
+```
 
 ### Running the Application
 
@@ -50,8 +49,9 @@ $ npm install
 
 Navigate to the backend directory and run:
 
-shell
+```shell
 npm run dev
+```
 
 This will start the Node.js backend on http://localhost:5713.
 
@@ -59,7 +59,7 @@ This will start the Node.js backend on http://localhost:5713.
 
 Navigate to the fronend directory and run:
 
-shell
+```shell
 npm run server
-
+```
 This will start the Vue development server on http://localhost:3100.
