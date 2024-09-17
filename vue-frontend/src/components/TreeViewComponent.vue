@@ -1,9 +1,9 @@
 <template>
   <div id="myapp">
     <div id="containter">
-      <svg ref="svg" :height="svgHeight" :width="svgwidth"></svg>
+      <svg ref="svg" :height="svgHeight" :width="svgWidth"></svg>
       <div v-if="showMyCard" id="cardInformation">
-        <span class="close" @click="closeCard">X</span>
+        <span class="close" @click="closeCard"><bold>X</bold></span>
         <h2>Node Information</h2>
         <span
           ><h3>Name:{{ selectedNode?.name }}</h3></span
@@ -15,15 +15,16 @@
     </div>
   </div>
 </template>
+
 <script>
 import * as d3 from "d3";
 import { ref, onMounted } from "vue";
-import axios from "axios";
+import axios from "axios"; // Assuming Axios is used for HTTP requests
 
 export default {
   setup() {
-    const svgHeight = ref(400);
-    const svgWidth = ref(600);
+    const svgHeight = ref(500);
+    const svgWidth = ref(800);
     const graphicalData = ref([]);
     const selectedNode = ref(null);
     const showMyCard = ref(false);
@@ -33,7 +34,6 @@ export default {
     onMounted(() => {
       getGraphData();
     });
-
     const getGraphData = async () => {
       const data = {
         data: [
@@ -71,25 +71,10 @@ export default {
             description: "This is a description of C-3",
             parent: "C",
           },
-          {
-            name: "D-1",
-            description: "This is a description of D-1",
-            parent: "D",
-          },
-          {
-            name: "D-2",
-            description: "This is a description of D-2",
-            parent: "D",
-          },
-          {
-            name: "D-3",
-            description: "This is a description of D-3",
-            parent: "D",
-          },
         ],
       };
       // graphicalData.value = data.data;
-      //  intializeTreeStructure();
+      // intializeTreeStructure();
       try {
         const myresponse = await axios.get("http://localhost:3100/data");
         graphicalData.value = await myresponse.data;
@@ -99,64 +84,75 @@ export default {
       }
     };
 
+    // Initialize tree layout using D3 library
     const intializeTreeStructure = () => {
       const rootElement = generateHierarchy(graphicalData.value);
       const treeviewLayout = d3
         .tree()
         .size([svgHeight.value - 100, svgWidth.value - 150]);
       const svgElement = d3.select(svg.value);
+
       const gSVG = svgElement
         .append("g")
         .attr("transform", "translate(50, 50)");
+
       mainHierarchy.value = d3.hierarchy(rootElement);
       mainHierarchy.value.x0 = svgHeight.value / 2;
       mainHierarchy.value.y0 = 0;
 
+      // collapse all children except the root
       mainHierarchy.value.children.forEach(collapseNode);
-      update(mainHierarchy.value, treeviewLayout, svgElement, gSVG);
+      updateNode(mainHierarchy.value, treeviewLayout, svgElement, gSVG);
     };
 
+    // Build a hierarchical structure from nodes and links
     const generateHierarchy = (data) => {
       const map = {};
-      const root = [];
-      data.forEach((d) => {
-        map[d.name] = { ...d, children: [] };
+      data.forEach((item) => {
+        map[item.name] = { ...item, children: [] };
       });
-      data.forEach((d) => {
-        if (d.parent == "") {
-          root.push(map[d.name]);
+      const root = [];
+      data.forEach((item) => {
+        if (item.parent === "") {
+          root.push(map[item.name]);
         } else {
-          map[d.parent].children.push(map[d.name]);
+          map[item.parent].children.push(map[item.name]);
         }
       });
       return root[0];
     };
 
-    const collapseNode = (e) => {
-      if (e.children) {
-        e._children = e.children;
-        e.children = null;
-        e._children.forEach(collapseNode);
+    // collapseNode function for nodes
+    const collapseNode = (d) => {
+      if (d.children) {
+        d._children = d.children;
+        d.children = null;
+        d._children.forEach(collapseNode);
       }
     };
-
-    const update = (nodeSource, treeviewLayout, svgElement, gSVG) => {
+    // updateNode function for update nodes on every actions
+    const updateNode = (nodeSource, treeviewLayout, svgElement, gSVG) => {
       let i = 0;
       const treeValue = treeviewLayout(mainHierarchy.value);
+
       const nodes = treeValue.descendants();
       const maxX = d3.max(nodes, (d) => d.x);
       const maxY = d3.max(nodes, (d) => d.y);
-      svgHeight.value = Math.max(maxX + 150, svgHeight.value);
-      svgWidth.value = Math.max(maxY + 200, svgWidth.value);
-      svgElement.attr("height", svgHeight.value).attr("width", svgWidth.value);
+
+      svgHeight.value = Math.max(maxX + 200, svgHeight.value);
+      svgWidth.value = Math.max(maxY + 500, svgWidth.value);
+
+      svgElement.attr("width", svgWidth.value).attr("height", svgHeight.value);
 
       const link = gSVG
         .selectAll(".link")
-        .data(treeValue.links(), (e) => e.target.id);
+        .data(treeValue.links(), (d) => d.target.id);
+
       link
         .enter()
         .append("path")
         .attr("class", "link")
+        .style("stroke-width", 1)
         .attr(
           "d",
           d3
@@ -164,24 +160,12 @@ export default {
             .x((d) => d.y)
             .y((d) => d.x)
         )
-        .style("stroke", "#555")
-        .style("stroke-width", "2px")
         .merge(link);
-
-      link
-        .attr(
-          "d",
-          d3
-            .linkHorizontal()
-            .x((d) => d.y)
-            .y((d) => d.x)
-        )
-        .style("stroke-width", "2px");
       link.exit().remove();
 
       const node = gSVG
         .selectAll(".node")
-        .data(nodes, (e) => e.id || (e.id = ++i));
+        .data(treeValue.descendants(), (d) => d.id || (d.id = ++i));
 
       const nodeEnter = node
         .enter()
@@ -191,33 +175,42 @@ export default {
           "transform",
           (d) => `translate(${nodeSource.y0},${nodeSource.x0})`
         )
-        .on("click", (event, d) => {
-          nodeClicked(event.currentTarget, d, treeviewLayout, svgElement, gSVG);
+        .on("click", (event, response) => {
+          nodeClicked(
+            event.currentTarget,
+            response,
+            treeviewLayout,
+            svgElement,
+            gSVG
+          );
         });
+
       nodeEnter
         .append("rect")
+        .attr("width", 80)
         .attr("height", 40)
-        .attr("width", 100)
         .attr("x", -20)
-        .attr("y", -20)
-        .style("fill", (e) => (e._children ? "#555" : "#69d049"));
+        .attr("y", -20);
+
       nodeEnter
         .append("text")
         .attr("dy", 3)
-        .attr("x", (e) => (e._children || e.children ? -25 : 25))
-        .style("text-anchor", (e) =>
-          e._children || e.children ? "end" : "start"
+        .attr("x", (d) => (d.children || d._children ? -25 : 25))
+        .style("text-anchor", (d) =>
+          d.children || d._children ? "end" : "start"
         )
-        .text((e) => e.data.name);
+        .text((d) => d.data.name);
 
-      const nodeUpdate = nodeEnter.merge(node);
-      nodeUpdate
+      const nodeupdateNode = nodeEnter.merge(node);
+      nodeupdateNode
         .transition()
         .duration(250)
         .attr("transform", (d) => `translate(${d.y},${d.x})`);
-      nodeUpdate
+
+      nodeupdateNode
         .select("rect")
-        .style("fill", (e) => (e._children ? "#ff6666" : "#49d049"));
+        .style("fill", (d) => (d._children ? "#ffd166" : "#06d6a0"));
+
       node
         .exit()
         .transition()
@@ -225,12 +218,41 @@ export default {
         .attr("transform", (d) => `translate(${nodeSource.y},${nodeSource.x})`)
         .remove();
 
-      treeValue.descendants().forEach((e) => {
-        e.x0 = e.x;
-        e.y0 = e.y;
+      treeValue.descendants().forEach((d) => {
+        d.x0 = d.x;
+        d.y0 = d.y;
       });
-    };
 
+      d3.forceSimulation(nodes)
+        .force(
+          "link",
+          d3
+            .forceLink(link)
+            .id((d) => d.id)
+            .distance(100)
+        )
+        .force("charge", d3.forceManyBody().strength(-400))
+        .force(
+          "center",
+          d3.forceCenter(svgWidth.value / 2, svgHeight.value / 2)
+        )
+        .force(
+          "collide",
+          d3.forceCollide().radius((d) => d.radius + 10)
+        )
+        .on("tick", (event, d) => {
+          link
+            .attr("x1", (d) => {
+              d.source.x;
+            })
+            .attr("y1", (d) => d.source.y)
+            .attr("x2", (d) => d.target.x)
+            .attr("y2", (d) => d.target.y);
+
+          node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+        });
+    };
+    //to make the node clickable
     const nodeClicked = (ele, d, treeviewLayout, svgElement, gSVG) => {
       showMyCard.value = true;
       cardSelected(ele, d);
@@ -244,19 +266,27 @@ export default {
         d.children = d._children;
         d._children = null;
       }
-      update(d, treeviewLayout, svgElement, gSVG);
+      updateNode(d, treeviewLayout, svgElement, gSVG);
     };
 
+    // to make the node selectable
     const cardSelected = (ele, d) => {
-      d3.selectAll("node").classed("selected", false);
+      if (d.data) {
+        d3.selectAll(".node").classed("selected", false);
+      }
       d3.select(ele).classed("selected", true);
       selectedNode.value = d.data;
     };
-
+    // to close the card
     const closeCard = () => {
       showMyCard.value = false;
+      deSelectNode();
     };
-
+    // to make the node unselectable
+    const deSelectNode = () => {
+      selectedNode.value = null;
+      d3.select(".node.selected").classed("selected", false);
+    };
     return {
       svgHeight,
       svgWidth,
@@ -268,7 +298,8 @@ export default {
   },
 };
 </script>
-<style scoped>
+
+<style>
 #container {
   display: flex;
   height: 100%;
@@ -277,8 +308,6 @@ export default {
 
 .tree-svg {
   flex: 1;
-  width: 100%;
-  height: 100%;
 }
 
 #cardInformation {
@@ -296,37 +325,29 @@ export default {
   margin: 0;
 }
 
-#cardInformation span .close {
+.close {
   font-size: 18px;
   cursor: pointer;
   position: absolute;
   right: 10px;
   top: 10px;
-}
-
-.node rect {
-  fill: #69b3a2;
-  stroke: #555;
-  stroke-width: 2px;
+  float: right;
+  color: red;
 }
 
 .node text {
-  font: 15px sans-serif;
-  fill: #33333367;
+  font: 12px sans-serif;
+  fill: #333;
 }
 
-.node .selected rect {
-  stroke: #ff7f0e;
+.node.selected rect {
+  stroke: #ef476f;
   stroke-width: 4px;
 }
 
 .link {
   fill: none;
-  stroke: #555;
+  stroke: #140e0e;
   stroke-width: 2px;
-}
-.close {
-  float: right;
-  color: red;
 }
 </style>

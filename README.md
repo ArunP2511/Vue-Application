@@ -1,4 +1,3 @@
-
 # Vue fullstack
 
 ## Description
@@ -8,7 +7,8 @@ This is a full-stack web application built with Vue.js on the frontend and Node.
 ## Technologies Used
 
 ## Frontend
-`Vue.js` - JavaScript framework for building user interfaces
+
+Vue.js - JavaScript framework for building user interfaces
 Axios (for HTTP requests)
 D3.js
 
@@ -18,13 +18,12 @@ Node.js - JavaScript runtime environment
 Express.js - Web framework for Node.js
 neo4j (or any other database) for data storage
 
-
 ## Project setup
 
 ### Clone the repository
 
 ```shell
-# Clone the repository
+Clone the repository
 $ git clone https://github.com/your-username/your-repo-name.git
 $ cd your-repo-name
 ```
