@@ -16,7 +16,7 @@ D3.js
 
 Node.js - JavaScript runtime environment
 Express.js - Web framework for Node.js
-neo4j (or any other database) for data storage
+neo4j (or any other database) for data storage(in this project, the graph data is from neo4j Aura(cloud service).The graph data is created a new instances and hosted in this neo4j cloud service)
 
 ## Project setup
 
