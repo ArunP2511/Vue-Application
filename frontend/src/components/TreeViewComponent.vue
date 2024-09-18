@@ -19,7 +19,7 @@
 <script>
 import * as d3 from "d3";
 import { ref, onMounted } from "vue";
-import axios from "axios"; // Assuming Axios is used for HTTP requests
+import { getGraphData } from "@/composables/UseTreeData";
 
 export default {
   setup() {
@@ -31,58 +31,10 @@ export default {
     const svg = ref(null);
     const mainHierarchy = ref(null);
 
-    onMounted(() => {
-      getGraphData();
+    onMounted(async () => {
+      graphicalData.value = await getGraphData();
+      intializeTreeStructure();
     });
-    const getGraphData = async () => {
-      const data = {
-        data: [
-          { name: "A", description: "This is a description of A", parent: "" },
-          { name: "B", description: "This is a description of B", parent: "A" },
-          { name: "C", description: "This is a description of C", parent: "A" },
-          { name: "D", description: "This is a description of D", parent: "A" },
-          {
-            name: "B-1",
-            description: "This is a description of B-1",
-            parent: "B",
-          },
-          {
-            name: "B-2",
-            description: "This is a description of B-2",
-            parent: "B",
-          },
-          {
-            name: "B-3",
-            description: "This is a description of B-3",
-            parent: "B",
-          },
-          {
-            name: "C-1",
-            description: "This is a description of C-1",
-            parent: "C",
-          },
-          {
-            name: "C-2",
-            description: "This is a description of C-2",
-            parent: "C",
-          },
-          {
-            name: "C-3",
-            description: "This is a description of C-3",
-            parent: "C",
-          },
-        ],
-      };
-      // graphicalData.value = data.data;
-      // intializeTreeStructure();
-      try {
-        const myresponse = await axios.get("http://localhost:3100/data");
-        graphicalData.value = await myresponse.data;
-        intializeTreeStructure();
-      } catch (error) {
-        console.error(error);
-      }
-    };
 
     // Initialize tree layout using D3 library
     const intializeTreeStructure = () => {

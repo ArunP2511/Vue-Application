@@ -32,14 +32,14 @@ $ cd your-repo-name
 ### For the frontend (Vue.js):
 
 ```shell
-$ cd vue-frontend
+$ cd frontend
 $ npm install
 ```
 
 ### For the backend (node.js):
 
 ```shell
-$ cd vue-backend
+$ cd backend
 $ npm install
 ```
 
@@ -50,19 +50,31 @@ $ npm install
 Navigate to the backend directory and run:
 
 ```shell
-npm run dev
+npm run server
 ```
 
-This will start the Node.js backend on http://localhost:5713.
+This will start the Node.js backend on http://localhost:3100.
 
-### 2 .Run the frontend (Vue) application:
+### To Run Tests
+
+```sh
+npm run test
+```
+
+### 2. Run the frontend (Vue) application:
 
 Navigate to the fronend directory and run:
 
 ```shell
-npm run server
+npm run dev
 ```
 
-This will start the Vue development server on http://localhost:3100.
+### To Run Unit Tests with [Vitest](https://vitest.dev/)
+
+```sh
+npm run test:unit
+```
+
+This will start the Vue development server on http://localhost:5713/Vue-Application.
 
 The application is deployment in the link: https://arunp2511.github.io/Vue-Application/
